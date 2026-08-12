@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Préstamos y Devoluciones - Sistema de Libros</title>
+    <link rel="stylesheet" href="Estilos.css">
+    <style>
+        .tabla-contenedor {
+            margin-top: 30px;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #2d2d2d;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+        .tabla-prestamos {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .tabla-prestamos th, .tabla-prestamos td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #2d2d2d;
+        }
+        .tabla-prestamos th {
+            background-color: #252525;
+            color: #e67e22;
+            font-weight: 600;
+        }
+        .tabla-prestamos tr:hover {
+            background-color: #252525;
+        }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .badge.activo { background: #d35400; color: white; }
+        .badge.devuelto { background: #27ae60; color: white; }
+    </style>
+</head>
+<body>
+  <script>
+function cerrarSesion() {
+  // Si deseas limpiar datos guardados de la sesión local
+  localStorage.clear();
+  sessionStorage.clear();
+
+  // Redirigir a la página de inicio de sesión
+  window.location.href = 'index.html';
+}
+</script>
+
+    <div class="sidebar">
+        <div>
+            <div class="menu-title">Biblioteca Digital</div>
+            <div id="txtUsuarioHeader"></div>
+            
+            <a href="dashboard.html" class="menu-btn">📊 Panel Principal</a>
+            <a href="prestamos.html" class="menu-btn">📖 Préstamos</a>
+            <a href="devoluciones.html" class="menu-btn active">📥 Devoluciones</a>
+            <a href="donativos.html" class="menu-btn">🎁 Donativos / Buzón</a>
+        </div>
+        <button class="btn-logout" onclick="cerrarSesion()">🚪 Cerrar Sesión</button>
+    </div>
+
+    <div class="main-content">
+        <div class="box">
+            <h2>Procesar Devolución Segura</h2>
+            <div class="status-scanner" id="scannerStatus" style="background: rgba(230, 126, 34, 0.1); color: #e67e22; border: 1px solid rgba(230, 126, 34, 0.3);">
+                🟡 Verificación activa: Escanee el libro y valide la identidad del alumno...
+            </div>
+
+            <form id="formDevolucion" onsubmit="procesarDevolucionForm(event)">
+                <div class="row">
+                    <label for="txtRfidDevolucion">1. CÓDIGO RFID / ISBN DEL LIBRO:</label>
+                    <input type="text" id="txtRfidDevolucion" required placeholder="Escanee o ingrese el código del libro..." autocomplete="off">
+                </div>
+
+                <div class="row">
+                    <label for="txtAlumnoDevolucion">2. NICKNAME / CREDENCIAL DEL ALUMNO:</label>
+                    <input type="text" id="txtAlumnoDevolucion" required placeholder="Ingrese el nickname o escanee credencial..." autocomplete="off">
+                </div>
+
+                <div class="row">
+                    <label for="txtEstadoFisico">3. ESTADO FÍSICO DE RECEPCIÓN:</label>
+                    <select id="txtEstadoFisico">
+                        <option value="Buen Estado">Buen Estado (Reingresa Disponible)</option>
+                        <option value="Dañado">Dañado / Requiere Mantenimiento</option>
+                    </select>
+                </div>
+
+                <button type="submit" style="background: #d35400;">Validar Identidad y Registrar Devolución</button>
+            </form>
+        </div>
+
+        <div class="tabla-contenedor">
+            <h3 style="margin-top: 0; color: #fff; border-bottom: 1px solid #2d2d2d; padding-bottom: 10px;">📋 Registro General de Préstamos / Historial</h3>
+            <table class="tabla-prestamos">
+                <thead>
+                    <tr>
+                        <th>Libro / Material</th>
+                        <th>Código RFID_ISBN</th>
+                        <th>Fecha Préstamo</th>
+                        <th>Devolución Esperada</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaMisPrestamosBody">
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: #888;">Cargando historial...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+<script>
+// Función auxiliar para parsear y formatear la fecha
+function formatearFecha(fechaRaw) {
+  if (!fechaRaw) return 'N/A';
+  const f = new Date(fechaRaw);
+  if (isNaN(f.getTime())) return fechaRaw;
+  return f.toLocaleDateString('es-MX') + ' ' + f.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+}
+
+// Cargar tabla del historial de préstamos
+async function cargarHistorial() {
+  try {
+    if (window.api && window.api.obtenerHistorialPrestamos) {
+      const res = await window.api.obtenerHistorialPrestamos();
+      const contenedor = document.getElementById('tablaMisPrestamosBody');
+
+      if (!contenedor) return;
+
+      if (res.exito && res.prestamos && res.prestamos.length > 0) {
+        contenedor.innerHTML = res.prestamos.map(p => {
+          const estatus = p.estado || 'Activo';
+          const claseBadge = estatus === 'Devuelto' ? 'badge devuelto' : 'badge activo';
+
+          return `
+            <tr>
+              <td>${p.titulo_libro || p.titulo || 'Sin Título'}</td>
+              <td>${p.rfid_isbn || p.rfid || 'N/A'}</td>
+              <td>${formatearFecha(p.fecha_prestamo)}</td>
+              <td>${formatearFecha(p.fecha_devolucion_esperada || p.fecha_devolucion)}</td>
+              <td><span class="${claseBadge}">${estatus}</span></td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        contenedor.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:15px;">No hay registros de préstamos en el historial.</td></tr>';
+      }
+    }
+  } catch (err) {
+    console.error("❌ Error al cargar historial:", err);
+  }
+}
+
+// Ejecutar la devolución al enviar el formulario
+async function procesarDevolucionForm(event) {
+  event.preventDefault();
+  const rfid = document.getElementById('txtRfidDevolucion').value.trim();
+
+  if (!rfid) {
+    alert('Ingrese o escanee el código RFID del libro.');
+    return;
+  }
+
+  if (window.api && window.api.procesarDevolucion) {
+    const res = await window.api.procesarDevolucion(rfid);
+    if (res.exito) {
+      alert('✅ ' + res.mensaje);
+      document.getElementById('formDevolucion').reset();
+      cargarHistorial(); // Refrescar la tabla al instante
+    } else {
+      alert('❌ Error al procesar devolución: ' + res.mensaje);
+    }
+  }
+}
+
+// Escuchar lecturas del hardware Arduino
+if (window.api && window.api.onRfidScanned) {
+  window.api.onRfidScanned((uid) => {
+    const inputRfid = document.getElementById('txtRfidDevolucion');
+    if (inputRfid) {
+      inputRfid.value = uid;
+    }
+  });
+}
+
+window.addEventListener('DOMContentLoaded', cargarHistorial);
+</script>
+</body>
+</html>

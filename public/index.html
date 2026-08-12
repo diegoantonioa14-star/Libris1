@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Sistema de Libros - Login</title>
+  <link rel="stylesheet" href="Estilos.css">
+</head>
+<body>
+
+  <main class="main-content" style="display: flex; align-items: center; justify-content: center; height: 100vh;">
+    <section class="box" style="width: 100%; max-width: 420px;">
+      <h2>Inicio de Sesión</h2>
+
+      <div class="status-scanner" id="scannerStatus">
+        <span>📡 Esperando lectura de tarjeta RFID...</span>
+      </div>
+
+      <form id="loginForm">
+        <div class="row">
+          <label for="nickname">USUARIO:</label>
+          <input type="text" id="nickname" placeholder="Ingrese usuario" required />
+        </div>
+
+        <div class="row">
+          <label for="password">CONTRASEÑA:</label>
+          <input type="password" id="password" placeholder="Ingrese contraseña" required />
+        </div>
+
+        <button type="submit" id="loginBtn" style="background: #2980b9; width: 100%; padding: 10px; color: white; border: none; cursor: pointer; border-radius: 4px;">Ingresar</button>
+      </form>
+    </section>
+  </main>
+
+<script>
+  const loginForm = document.getElementById('loginForm');
+  const userInput = document.getElementById('nickname');
+  const passInput = document.getElementById('password');
+  const statusDiv = document.getElementById('scannerStatus');
+
+  // 1. Escuchar datos emitidos por el lector RFID de Arduino
+  if (window.api && window.api.onRfidLoginData) {
+    window.api.onRfidLoginData(async (data) => {
+      if (userInput && passInput) {
+        userInput.value = data.nickname;
+        passInput.value = data.password;
+
+        if (statusDiv) {
+          statusDiv.innerHTML = `<span>✅ Tarjeta detectada: <b>${data.nickname}</b></span>`;
+          statusDiv.style.background = 'rgba(46, 204, 113, 0.2)';
+        }
+
+        // Ejecutar inicio de sesión automático tras detectar la tarjeta
+        await procesarLogin(data.nickname, data.password);
+      }
+    });
+  }
+
+  // 2. Escuchar error si la tarjeta no está registrada
+  if (window.api && window.api.onRfidError) {
+    window.api.onRfidError((mensaje) => {
+      if (statusDiv) {
+        statusDiv.innerHTML = `<span>⚠️ ${mensaje}</span>`;
+        statusDiv.style.background = 'rgba(231, 76, 60, 0.2)';
+      }
+    });
+  }
+
+  // 3. Manejo del evento Submit (Formulario Manual)
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const usuario = userInput.value.trim();
+      const password = passInput.value.trim();
+
+      if (!usuario || !password) {
+        alert('Por favor ingrese usuario y contraseña.');
+        return;
+      }
+
+      await procesarLogin(usuario, password);
+    });
+  }
+
+  // 4. Función central para validar contra MySQL y dar acceso
+  async function procesarLogin(usuario, password) {
+    if (window.api && window.api.validarLogin) {
+      const res = await window.api.validarLogin({ usuario, password });
+
+      if (res.exito) {
+        sessionStorage.setItem('usuarioActual', usuario);
+        localStorage.setItem('usuarioActivo', JSON.stringify(res.usuario));
+        window.location.href = 'dashboard.html';
+      } else {
+        alert('❌ ' + res.mensaje);
+        passInput.value = '';
+        passInput.focus();
+      }
+    } else {
+      // Fallback en caso de pruebas locales fuera de Electron
+      sessionStorage.setItem('usuarioActual', usuario);
+      window.location.href = 'dashboard.html';
+    }
+  }
+</script>
+</body>
+</html>

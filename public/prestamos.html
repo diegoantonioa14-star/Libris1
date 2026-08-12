@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Préstamos - Sistema de Libros</title>
+    <link rel="stylesheet" href="Estilos.css">
+    <style>
+        .tabla-contenedor {
+            margin-top: 30px;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #2d2d2d;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+        .tabla-inventario {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .tabla-inventario th, .tabla-inventario td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #2d2d2d;
+        }
+        .tabla-inventario th {
+            background-color: #252525;
+            color: #3498db;
+            font-weight: 600;
+        }
+        .tabla-inventario tr:hover {
+            background-color: #252525;
+        }
+        .btn-seleccionar {
+            background: #2980b9;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .btn-seleccionar:hover {
+            background: #3498db;
+        }
+    </style>
+</head>
+<body>
+<script>
+function cerrarSesion() {
+  // Si deseas limpiar datos guardados de la sesión local
+  localStorage.clear();
+  sessionStorage.clear();
+
+  // Redirigir a la página de inicio de sesión
+  window.location.href = 'index.html';
+}
+</script>
+    <div class="sidebar">
+        <div>
+            <div class="menu-title">Biblioteca Digital</div>
+            <div id="txtUsuarioHeader"></div>
+            
+            <a href="dashboard.html" class="menu-btn">📊 Panel Principal</a>
+            <a href="prestamos.html" class="menu-btn active">📖 Préstamos</a>
+            <a href="devoluciones.html" class="menu-btn">📥 Devoluciones</a>
+            <a href="donativos.html" class="menu-btn">🎁 Donativos / Buzón</a>
+        </div>
+        <button class="btn-logout" onclick="cerrarSesion()">🚪 Cerrar Sesión</button>
+    </div>
+
+    <div class="main-content">
+        <div class="box">
+            <h2>Asignar Nuevo Préstamo</h2>
+            
+            <div class="status-scanner" id="scannerStatus">🟢 Lector RFID Listo: Acerque una tarjeta o seleccione un libro abajo...</div>
+
+            <form id="formPrestamo" onsubmit="registrarPrestamo(event)">
+                <div class="row">
+                    <label for="txtRfidLibro">Código RFID / ISBN del Libro:</label>
+                    <input type="text" id="txtRfidLibro" required placeholder="Esperando lectura de hardware..." autocomplete="off">
+                </div>
+
+                <div class="row">
+                    <label for="txtAlumnoPrestamo">Nickname del Alumno Solicitante:</label>
+                    <input type="text" id="txtAlumnoPrestamo" required placeholder="Ingrese el nickname de la cuenta..." autocomplete="off">
+                </div>
+
+                <div class="row">
+                    <label for="txtDias">Vigencia (Días):</label>
+                    <input type="number" id="txtDias" value="7" min="1" max="30">
+                </div>
+
+                <button type="submit">Registrar Salida de Libro</button>
+            </form>
+        </div>
+
+        <div class="tabla-contenedor">
+            <h3 style="margin-top: 0; color: #fff; border-bottom: 1px solid #2d2d2d; padding-bottom: 10px;">📚 Libros Disponibles para Préstamo</h3>
+            <table class="tabla-inventario">
+                <thead>
+                    <tr>
+                        <th>RFID / ISBN</th>
+                        <th>Título</th>
+                        <th>Autor</th>
+                        <th>Editorial</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaDisponiblesBody">
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: #888;">Cargando catálogo disponible...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+<script>
+// Función global para autocompletar el input del formulario al hacer clic en el botón
+function seleccionarLibro(rfid) {
+  const inputRfid = document.getElementById('txtRfidLibro');
+  if (inputRfid) {
+    inputRfid.value = rfid;
+    inputRfid.focus();
+  }
+}
+
+async function cargarLibrosDisponibles() {
+  console.log("🔍 Intentando cargar libros disponibles...");
+
+  if (!window.api || !window.api.obtenerLibrosDisponibles) {
+    console.error("❌ window.api u obtenerLibrosDisponibles no está expuesto en preload.js");
+    return;
+  }
+
+  try {
+    const res = await window.api.obtenerLibrosDisponibles();
+    const contenedor = document.getElementById('tablaDisponiblesBody');
+
+    if (!contenedor) return;
+
+    if (res.exito && res.libros && res.libros.length > 0) {
+      contenedor.innerHTML = res.libros.map(libro => `
+        <tr>
+          <td>${libro.rfid_isbn || ''}</td>
+          <td>${libro.titulo || ''}</td>
+          <td>${libro.autor || ''}</td>
+          <td>${libro.editorial || ''}</td>
+          <td>
+            <button type="button" class="btn-seleccionar" onclick="seleccionarLibro('${libro.rfid_isbn}')">
+              Seleccionar
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    } else if (res.exito && res.libros.length === 0) {
+      contenedor.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:15px;">No hay libros disponibles en MySQL.</td></tr>';
+    } else {
+      contenedor.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:15px; color:red;">Error de base de datos: ${res.mensaje}</td></tr>`;
+    }
+  } catch (err) {
+    console.error("❌ Error inesperado:", err);
+  }
+}
+
+// Escuchar evento del escáner RFID (Arduino) si pasa por la pantalla
+if (window.api && window.api.onRfidScanned) {
+  window.api.onRfidScanned((uid) => {
+    const inputRfid = document.getElementById('txtRfidLibro');
+    if (inputRfid) {
+      inputRfid.value = uid;
+    }
+  });
+}
+
+window.addEventListener('DOMContentLoaded', cargarLibrosDisponibles);
+</script>
+</body>
+</html>

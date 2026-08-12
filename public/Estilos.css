@@ -1,0 +1,250 @@
+/* ==========================================================================
+   ESTILOS GLOBALES - HOJA UNIFICADA "BUZÓN Y BIBLIOTECA DIGITAL"
+   ========================================================================== */
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #141414; /* Fondo oscuro profundo */
+    color: #ffffff;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   SIDEBAR LATERAL (MENÚ)
+   ========================================================================== */
+
+.sidebar {
+    width: 260px;
+    background: #1e1e1e; /* Gris oscuro para contraste */
+    padding: 25px 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-right: 1px solid #2d2d2d;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.menu-title {
+    font-size: 20px;
+    margin-bottom: 5px;
+    font-weight: 700;
+    color: #3498db; /* Azul tecnológico accent */
+    letter-spacing: 0.5px;
+}
+
+#txtUsuarioHeader {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 25px;
+    padding-left: 2px;
+    border-bottom: 1px solid #2d2d2d;
+    padding-bottom: 15px;
+}
+
+/* Botones de Navegación */
+.menu-btn {
+    width: 100%;
+    background: #282828;
+    color: #bbb;
+    border: 1px solid #333;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    text-align: left;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    display: block;
+    box-sizing: border-box;
+    transition: all 0.2s ease-in-out;
+}
+
+.menu-btn:hover {
+    background: #333;
+    color: #fff;
+    border-color: #444;
+    transform: translateX(3px);
+}
+
+.menu-btn.active {
+    background: #3a556a; /* Azul acero seleccionado */
+    color: #ffffff;
+    border-color: #4b6b85;
+    font-weight: 600;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Botón Cerrar Sesión */
+.btn-logout {
+    background: #c0392b;
+    width: 100%;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.btn-logout:hover {
+    background: #e74c3c;
+}
+
+/* ==========================================================================
+   CONTENEDOR PRINCIPAL Y FORMULARIOS
+   ========================================================================== */
+
+.main-content {
+    flex: 1;
+    padding: 40px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    background: #141414;
+}
+
+.box {
+    background: #1e1e1e;
+    padding: 30px;
+    border-radius: 8px;
+    border: 1px solid #2d2d2d;
+    max-width: 650px;
+    margin: 0 auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+h2 {
+    margin-top: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #fff;
+    border-bottom: 2px solid #2d2d2d;
+    padding-bottom: 12px;
+    margin-bottom: 25px;
+}
+
+p {
+    color: #aaa;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+/* Elementos de Formulario */
+.row {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    color: #aaa;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+input, select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid #333;
+    background: #252525;
+    color: #fff;
+    font-size: 15px;
+    box-sizing: border-box;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #3498db;
+    background: #2a2a2a;
+}
+
+/* Variaciones de fondos de Inputs según el estado de la acción */
+#txtRfidLibro { background: #1f2d3d; border-color: #2c4766; color: #5dade2; } /* Tono azul para Préstamos */
+#txtRfidDevolucion { background: #2d251a; border-color: #5e4829; color: #f39c12; } /* Tono ámbar para Devoluciones */
+#txtDonativoRfid { background: #1a2a22; border-color: #27563d; color: #2ecc71; } /* Tono verde para Altas */
+
+/* Botones de Acción de Formularios */
+form button[type="submit"], .box button {
+    width: 100%;
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: background 0.2s, transform 0.1s;
+}
+
+form button:active {
+    transform: scale(0.98);
+}
+
+/* Colores dinámicos para los botones de envío */
+#formPrestamo button { background: #2980b9; }
+#formPrestamo button:hover { background: #3498db; }
+
+#formDevolucion button { background: #d35400; }
+#formDevolucion button:hover { background: #e67e22; }
+
+#formDonativo button { background: #27ae60; }
+#formDonativo button:hover { background: #2ecc71; }
+
+
+/* ==========================================================================
+   BLOQUES DE ESTADO DE HARDWARE (ARDUINO / SENSOR)
+   ========================================================================== */
+
+.status-scanner {
+    padding: 14px 16px;
+    border-radius: 6px;
+    margin-bottom: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+/* Estados dinámicos usando los colores base de cada sección */
+#formPrestamo ~ .status-scanner, .status-scanner[id="scannerStatus"] {
+    background: rgba(46, 204, 113, 0.1);
+    color: #2ecc71;
+    border-left: 4px solid #2ecc71;
+}
+
+#formDevolucion ~ .status-scanner {
+    background: rgba(241, 196, 15, 0.1);
+    color: #f1c40f;
+    border-left: 4px solid #f1c40f;
+}
+
+#formDonativo ~ .status-scanner {
+    background: rgba(52, 152, 219, 0.1);
+    color: #3498db;
+    border-left: 4px solid #3498db;
+}
+
+/* Bloques de Historial de ejemplo en Paneles */
+.info-block {
+    background: #252525;
+    padding: 14px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    border-left: 4px solid #3a556a;
+    font-size: 14px;
+    line-height: 1.5;
+}

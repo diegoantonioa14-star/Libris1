@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - Sistema de Libros</title>
+    <link rel="stylesheet" href="Estilos.css">
+</head>
+<body>
+
+    <div class="sidebar">
+        <div>
+          <div class="menu-title">Libris</div>
+            <div id="txtUsuarioHeader"></div>
+            
+            <a href="dashboard.html" class="menu-btn active">📊 Panel Principal</a>
+            <a href="prestamos.html" class="menu-btn">📖 Préstamos</a>
+            <a href="devoluciones.html" class="menu-btn">📥 Devoluciones</a>
+            <a href="donativos.html" class="menu-btn">🎁 Donativos / Buzón</a>
+        </div>
+        <button class="btn-logout" onclick="cerrarSesion()">🚪 Cerrar Sesión</button>
+    </div>
+
+    <div class="main-content">
+        <div class="box">
+            <h2>Panel Principal</h2>
+            <div class="info-block">
+                <strong>Estado del Sistema:</strong> Conectado a la base de datos relacional (`biblioteca_digital`).
+            </div>
+            <p>
+                Bienvenido al panel de control del Sistema de Biblioteca Digital. Tenga en cuenta que este programa se encuentra actualmente en fase de desarrollo, por lo que es posible que experimente algunos errores o comportamientos inesperados, los cuales se irán corrigiendo en próximas actualizaciones.
+            </p>
+            <p>Drew Studios 2026, Todos los Derechos Reservados</p>
+        </div>
+    </div>
+
+    <script>
+        const usuarioActivo = sessionStorage.getItem('usuarioActual') || 'Usuario';
+        document.getElementById('txtUsuarioHeader').innerText = "Conectado como: " + usuarioActivo;
+
+        function cerrarSesion() {
+            sessionStorage.removeItem('usuarioActual');
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>

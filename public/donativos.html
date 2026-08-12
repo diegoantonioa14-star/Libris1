@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donativos y Altas - Sistema de Libros</title>
+    <link rel="stylesheet" href="Estilos.css">
+</head>
+<body>
+    <script>
+function cerrarSesion() {
+  // Si deseas limpiar datos guardados de la sesión local
+  localStorage.clear();
+  sessionStorage.clear();
+
+  // Redirigir a la página de inicio de sesión
+  window.location.href = 'index.html';
+}
+</script>
+
+    <div class="sidebar">
+        <div>
+            <div class="menu-title">Biblioteca Digital</div>
+            <div id="txtUsuarioHeader"></div>
+            
+            <a href="dashboard.html" class="menu-btn">📊 Panel Principal</a>
+            <a href="prestamos.html" class="menu-btn">📖 Préstamos</a>
+            <a href="devoluciones.html" class="menu-btn">📥 Devoluciones</a>
+            <a href="donativos.html" class="menu-btn active">🎁 Donativos / Altas</a>
+        </div>
+        <button class="btn-logout" onclick="cerrarSesion()">🚪 Cerrar Sesión</button>
+    </div>
+
+    <div class="main-content">
+        <div class="box">
+            <h2>Registro de Donativos (Alta de Libros)</h2>
+            
+            <div class="status-scanner" id="scannerStatus">
+                🔵 Escáner Listo: Escanee la etiqueta o asigne un UID RFID al material...
+            </div>
+
+            <form id="formDonativo" onsubmit="registrarDonativo(event)">
+                <div class="row">
+                    <label for="txtDonativoRfid">Código RFID_ISBN Asignado:</label>
+                    <input type="text" id="txtDonativoRfid" required placeholder="Escanee la etiqueta para enlazar..." autocomplete="off">
+                </div>
+
+                <div class="row">
+                    <label for="txtDonativoTitulo">Título del Libro:</label>
+                    <input type="text" id="txtDonativoTitulo" required placeholder="Ej. Título del material...">
+                </div>
+
+                <div class="row">
+                    <label for="txtDonativoAutor">Autor:</label>
+                    <input type="text" id="txtDonativoAutor" required placeholder="Nombre del autor...">
+                </div>
+
+                <div class="row">
+                    <label for="txtDonativoEditorial">Editorial:</label>
+                    <input type="text" id="txtDonativoEditorial" placeholder="Compañía editorial...">
+                </div>
+
+                <div class="row">
+                    <label for="txtDonativoAnio">Año de Publicación:</label>
+                    <input type="number" id="txtDonativoAnio" placeholder="Año (Ej. 2026)">
+                </div>
+
+                <button type="submit">Dar de Alta en `tb_libro`</button>
+            </form>
+        </div>
+    </div>
+
+<script>
+// Escuchar lectura de RFID enviada desde el proceso principal
+if (window.api && window.api.onRfidScanned) {
+    window.api.onRfidScanned((uid) => {
+        const inputRfid = document.getElementById('txtDonativoRfid');
+        if (inputRfid) {
+            inputRfid.value = uid;
+            
+            const statusDiv = document.getElementById('scannerStatus');
+            if (statusDiv) {
+                statusDiv.innerText = `✅ RFID Capturado: ${uid}`;
+                statusDiv.style.background = 'rgba(46, 204, 113, 0.2)';
+            }
+        }
+    });
+}
+
+async function registrarDonativo(e) {
+    if (e) e.preventDefault();
+
+    const rfid_isbn = document.getElementById('txtDonativoRfid')?.value.trim();
+    const titulo = document.getElementById('txtDonativoTitulo')?.value.trim();
+    const autor = document.getElementById('txtDonativoAutor')?.value.trim();
+    const editorial = document.getElementById('txtDonativoEditorial')?.value.trim();
+    const anio = document.getElementById('txtDonativoAnio')?.value.trim();
+
+    if (!rfid_isbn || !titulo || !autor) {
+        alert("Por favor completa los campos obligatorios: RFID/ISBN, Título y Autor.");
+        return;
+    }
+
+    const payload = { rfid_isbn, titulo, autor, editorial, anio };
+
+    try {
+        const res = await window.api.guardarLibro(payload);
+
+        if (res && res.exito) {
+            alert("¡Éxito! " + (res.mensaje || "Libro dado de alta correctamente."));
+            document.getElementById('formDonativo').reset();
+            
+            const statusDiv = document.getElementById('scannerStatus');
+            if (statusDiv) {
+                statusDiv.innerText = "🔵 Escáner Listo: Escanee la etiqueta o asigne un UID RFID al material...";
+                statusDiv.style.background = '';
+            }
+        } else {
+            alert("Error al guardar en MySQL: " + (res?.mensaje || "Error desconocido en la base de datos."));
+        }
+    } catch (err) {
+        console.error("Error IPC:", err);
+        alert("Ocurrió un problema al comunicarse con el proceso de Electron: " + err.message);
+    }
+}
+
+function cerrarSesion() {
+    sessionStorage.removeItem('usuarioActual');
+    window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>
