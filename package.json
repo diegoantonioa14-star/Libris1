@@ -1,0 +1,34 @@
+{
+  "name": "sistema_de_libros",
+  "version": "1.0.0",
+  "description": "Sistema de Libros y Biblioteca Digital",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "postinstall": "electron-builder install-app-deps",
+    "dist": "electron-builder"
+  },
+  "dependencies": {
+    "@serialport/parser-readline": "^13.0.0",
+    "mysql2": "^3.11.0",
+    "serialport": "^13.0.0"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^4.2.0",
+    "electron": "^43.1.1",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.sistemalibros.app",
+    "productName": "SistemaLibros",
+    "asar": true,
+    "asarUnpack": [
+      "**/node_modules/serialport/**/*",
+      "**/node_modules/@serialport/**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "requestedExecutionLevel": "requireAdministrator"
+    }
+  }
+}
